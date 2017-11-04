@@ -68,3 +68,14 @@ extension_trait! { pub ReturnArgument for () {
 fn generic_function_extension_traits() {
     assert_eq!(().return_argument(42), "42");
 }
+
+extension_trait! { <T: Into<String>> pub DoubleBracketConversion for Vec<T> {
+    fn first_into_string(&self) -> String {
+        self[0].into()
+    }
+} }
+
+#[test]
+fn double_bracket_conversion() {
+    assert_eq!(vec!["asdf"].first_into_string(), String::from("asdf"));
+}
