@@ -54,3 +54,12 @@ extension_trait! { <T> pub Length for Vec<T> {
 fn generic_extension_traits() {
     assert_eq!(vec!["q"].size(), 1);
 }
+
+extension_trait! { pub ReturnArgument for () {
+    fn return_argument<T>(&self, arg: T) -> T
+    where
+        T: Debug,
+    {
+        arg
+    }
+} }
