@@ -5,7 +5,7 @@ methods to an external type.
 
 # Example
 
-```
+```rust
 #[macro_use]
 extern crate extension_trait;
 
