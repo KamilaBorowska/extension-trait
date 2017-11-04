@@ -11,7 +11,7 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name:ident $(: $fn_gen_bound:ty)*
             ),* > )*
-            $args:tt $(-> $out:ty)* $code:block
+            ( $($args:tt)* ) $(-> $out:ty)* $code:block
         )* }
     ]) => {
         $(#[$attr])*
@@ -21,7 +21,7 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name $(: $fn_gen_bound)*
             ),* > )*
-            $args $(-> $out)*;
+            ( $($args)* ) $(-> $out)*;
         )* }
 
         impl
@@ -34,7 +34,7 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name $(: $fn_gen_bound)*
             ),* > )*
-            $args $(-> $out)* $code
+            ( $($args)* ) $(-> $out)* $code
         )* }
     };
 
