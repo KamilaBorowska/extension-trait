@@ -1,11 +1,3 @@
-/*
-extension_trait! { Between for str {
-    fn between(&self, front: &str, end: &str) -> Option<&str>;
-    fn before(&self, end: &str) -> Option<&str>;
-    fn after(&self, front: &str) -> Option<&str>;
-} }
-*/
-
 #[macro_export]
 macro_rules! extension_trait {
     (
