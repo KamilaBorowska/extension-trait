@@ -11,7 +11,14 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name:ident $(: $fn_gen_bound:ty)*
             ),* > )*
-            ( $($args:tt)* ) $(-> $out:ty)* $code:block
+            ( $($args:tt)* ) $(-> $out:ty)*
+            $(
+                where $(
+                    $where_gen_name:ty : $bound:ty
+                ),*
+                $(,)*
+            )*
+            $code:block
         )* }
     ]) => {
         $(#[$attr])*
