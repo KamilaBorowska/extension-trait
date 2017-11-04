@@ -1,23 +1,6 @@
-/// Declares an extension trait
-///
-/// # Example
-///
-/// ```
-/// #[macro_use]
-/// extern crate extension_trait;
-///
-/// extension_trait! { pub Double for str {
-///    fn double(&self) -> String {
-///        self.repeat(2)
-///    }
-/// } }
-///
-/// fn main() {
-///     assert_eq!("Hello".double(), "HelloHello");
-/// }
-/// ```
+#[doc(hidden)]
 #[macro_export]
-macro_rules! extension_trait {
+macro_rules! extension_trait_internal {
     (@finish_parsing [$($pub_token:tt)*]
         $(#[$attr:meta])*
         $(<$(
@@ -79,12 +62,8 @@ macro_rules! extension_trait {
         )* }
     };
 
-    (@finish_parsing $($rest:tt)*) => {
-        compile_error!(concat!("Incorrect macro syntax, debug info:\n", stringify!($($rest)*)));
-    };
-
     (@normalize_block $parsed:tt $block_parsed:tt $pub_token:tt : $($rest:tt)*) => {
-        extension_trait!(
+        extension_trait_internal!(
             @parse_type_till_end
             [@normalize_block $parsed]
             $block_parsed
@@ -96,29 +75,29 @@ macro_rules! extension_trait {
     };
 
     (@normalize_block {$($parsed:tt)*} $block_parsed:tt $pub_token:tt) => {
-        extension_trait!(@finish_parsing $pub_token $($parsed)* $block_parsed);
+        extension_trait_internal!(@finish_parsing $pub_token $($parsed)* $block_parsed);
     };
 
     (
         @normalize_block $parsed:tt {$($block_parsed:tt)*}
         $pub_token:tt $parsed_token:tt $($rest:tt)*
     ) => {
-        extension_trait!(
+        extension_trait_internal!(
             @normalize_block $parsed {$($block_parsed)* $parsed_token}
             $pub_token $($rest)*
         );
     };
 
     (@normalize_expression $parsed:tt $pub_token:tt {$($contents:tt)*}) => {
-        extension_trait!(@normalize_block $parsed {} $pub_token $($contents)*);
+        extension_trait_internal!(@normalize_block $parsed {} $pub_token $($contents)*);
     };
 
     (@normalize_expression $parsed:tt [] pub $($rest:tt)*) => {
-        extension_trait!(@normalize_expression $parsed [pub] $($rest)*);
+        extension_trait_internal!(@normalize_expression $parsed [pub] $($rest)*);
     };
 
     (@normalize_expression $parsed:tt $pub_token:tt : $($rest:tt)*) => {
-        extension_trait!(
+        extension_trait_internal!(
             @parse_type_till_end [@normalize_expression] $parsed []
             $pub_token [] $($rest)*
         );
@@ -128,7 +107,7 @@ macro_rules! extension_trait {
         @parse_type_till_end $return_trait:tt $parsed:tt [$($left_brackets:tt)*]
         $pub_token:tt [$($type_name:tt)*] < $($rest:tt)*
     ) => {
-        extension_trait!(
+        extension_trait_internal!(
             @parse_type_till_end $return_trait $parsed [$($left_brackets)* <]
             $pub_token [$($type_name)* <] $($rest)*
         );
@@ -138,7 +117,7 @@ macro_rules! extension_trait {
         @parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt
         $pub_token:tt $type_name:tt >> $($rest:tt)*
     ) => {
-        extension_trait!(
+        extension_trait_internal!(
             @parse_type_till_end $return_trait $parsed $left_brackets
             $pub_token $type_name > > $($rest)*
         );
@@ -148,21 +127,21 @@ macro_rules! extension_trait {
         @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} []
         $pub_token:tt $type_name:tt > $($rest:tt)*
     ) => {
-        extension_trait!($($return_trait)* {$($parsed)*: $type_name>} $pub_token $($rest)*);
+        extension_trait_internal!($($return_trait)* {$($parsed)*: $type_name>} $pub_token $($rest)*);
     };
 
     (
         @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt
         $pub_token:tt $type_name:tt , $($rest:tt)*
     ) => {
-        extension_trait!($($return_trait)* {$($parsed)*: $type_name,} $pub_token $($rest)*);
+        extension_trait_internal!($($return_trait)* {$($parsed)*: $type_name,} $pub_token $($rest)*);
     };
 
     (
         @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} []
         $pub_token:tt $type_name:tt {$($block:tt)*} $($rest:tt)*
     ) => {
-        extension_trait!(
+        extension_trait_internal!(
             $($return_trait)* {$($parsed)*: $type_name}
             $pub_token {$($block)*} $($rest)*
         );
@@ -172,7 +151,7 @@ macro_rules! extension_trait {
         @parse_type_till_end $return_trait:tt $parsed:tt [< $($left_brackets:tt)*]
         $pub_token:tt [$($type_name:tt)*] > $($rest:tt)*
     ) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed
+        extension_trait_internal!(@parse_type_till_end $return_trait $parsed
         [$($left_brackets)*] $pub_token [$($type_name)* >] $($rest)*);
     };
 
@@ -180,7 +159,7 @@ macro_rules! extension_trait {
         @parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt
         $pub_token:tt [$($type_name:tt)*] $token:tt $($rest:tt)*
     ) => {
-        extension_trait!(
+        extension_trait_internal!(
             @parse_type_till_end
             $return_trait
             $parsed
@@ -192,17 +171,31 @@ macro_rules! extension_trait {
     };
 
     (@normalize_expression {$($parsed:tt)*} $pub_token:tt $parsed_token:tt $($rest:tt)*) => {
-        extension_trait!(@normalize_expression {$($parsed)* $parsed_token} $pub_token $($rest)*);
+        extension_trait_internal!(@normalize_expression {$($parsed)* $parsed_token} $pub_token $($rest)*);
     };
+}
 
-    (@ $($rest:tt)*) => {
-        compile_error!(concat!(
-            "Parsing has failed before generating final code, this is likely a bug, debug info:\n",
-            stringify!(@ $($rest)*)
-        ) );
-    };
-
-    ($($token:tt)*) => {
-        extension_trait!(@normalize_expression {} [] $($token)*);
+/// Declares an extension trait
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate extension_trait;
+///
+/// extension_trait! { pub Double for str {
+///    fn double(&self) -> String {
+///        self.repeat(2)
+///    }
+/// } }
+///
+/// fn main() {
+///     assert_eq!("Hello".double(), "HelloHello");
+/// }
+/// ```
+#[macro_export]
+macro_rules! extension_trait {
+    ($($token:tt)+) => {
+        extension_trait_internal!(@normalize_expression {} [] $($token)+);
     };
 }
