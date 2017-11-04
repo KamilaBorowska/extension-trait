@@ -1,34 +1,60 @@
 #[macro_export]
 macro_rules! extension_trait {
-    (
+    (@finish_parsing [$($pub_token:tt)*] [
         $(#[$attr:meta])*
-        $trait_name:ident for $impl_ty:ty { $(
-            fn $fn_name:ident $args:tt $(-> $out_type:ty)* $code:block
+        $(<$(
+            $impl_gen_name:ident $(: $impl_gen_bound:ty)*
+        ),*>)*
+        $trait_name:ident for $type_name:ty
+        { $(
+            fn $fn_name:ident
+            $( < $(
+                $fn_gen_name:ident $(: $fn_gen_bound:ty)*
+            ),* > )*
+            $args:tt $(-> $out:ty)* $code:block
         )* }
-    ) => {
+    ]) => {
         $(#[$attr])*
+        $($pub_token)*
         trait $trait_name { $(
-            fn $fn_name $args $(-> $out_type)*;
+            fn $fn_name
+            $( < $(
+                $fn_gen_name $(: $fn_gen_bound)*
+            ),* > )*
+            $args $(-> $out)*;
         )* }
 
-        impl $trait_name for $impl_ty { $(
-            fn $fn_name $args $(-> $out_type)* $code
+        impl
+        $(<$(
+            $impl_gen_name $(: $impl_gen_bound)*
+        ),*>)*
+        $trait_name for $type_name
+        { $(
+            fn $fn_name
+            $( < $(
+                $fn_gen_name $(: $fn_gen_bound)*
+            ),* > )*
+            $args $(-> $out)* $code
         )* }
     };
 
-    (
-        $(#[$attr:meta])*
-        pub $trait_name:ident for $impl_ty:ty { $(
-            fn $fn_name:ident $args:tt $(-> $out_type:ty)* $code:block
-        )* }
-    ) => {
-        $(#[$attr])*
-        pub trait $trait_name { $(
-            fn $fn_name $args $(-> $out_type)*;
-        )* }
+    (@normalize_expression $parsed:tt $pub_token:tt) => {
+        extension_trait!(@finish_parsing $pub_token $parsed);
+    };
 
-        impl $trait_name for $impl_ty { $(
-            fn $fn_name $args $(-> $out_type)* $code
-        )* }
+    (@normalize_expression $parsed:tt $pub_token:tt >> $($rest:tt)*) => {
+        extension_trait!(@normalize_expression $parsed $pub_token > > $($rest)*);
+    };
+
+    (@normalize_expression $parsed:tt [] pub $($rest:tt)*) => {
+        extension_trait!(@normalize_expression $parsed [pub] $($rest)*);
+    };
+
+    (@normalize_expression [$($parsed:tt)*] $pub_token:tt $parsed_token:tt $($rest:tt)*) => {
+        extension_trait!(@normalize_expression [$($parsed)* $parsed_token] $pub_token $($rest)*);
+    };
+
+    ($($token:tt)*) => {
+        extension_trait!(@normalize_expression [] [] $($token)*);
     };
 }
