@@ -43,3 +43,14 @@ fn pub_extension_trait() {
     use x::Public;
     assert_eq!(24i32.method(), 42);
 }
+
+extension_trait! { <T> pub Length for Vec<T> {
+    fn size(&self) -> usize {
+        self.len()
+    }
+} }
+
+#[test]
+fn generic_extension_traits() {
+    assert_eq!(vec!["q"].size(), 1);
+}
