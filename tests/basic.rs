@@ -63,3 +63,8 @@ extension_trait! { pub ReturnArgument for () {
         arg
     }
 } }
+
+#[test]
+fn generic_function_extension_traits() {
+    assert_eq!(().return_argument(42), 42);
+}
