@@ -41,6 +41,8 @@ macro_rules! extension_trait_internal {
             $trait_gen_name $(: [$($trait_gen_bound)*])*
         ),*>)*
         { $(
+            // Will be removed once Rust allows `:` to follow `pat` in macros.
+            #[allow(patterns_in_fns_without_body)]
             $($fn_keywords)* fn $fn_name
             $( < $(
                 $fn_gen_name $(: $($fn_gen_bound)*)*
