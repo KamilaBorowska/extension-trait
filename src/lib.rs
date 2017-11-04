@@ -183,7 +183,7 @@ macro_rules! extension_trait_internal {
 /// #[macro_use]
 /// extern crate extension_trait;
 ///
-/// extension_trait! { pub Double for str {
+/// extension_trait! { pub DoubleExt for str {
 ///    fn double(&self) -> String {
 ///        self.repeat(2)
 ///    }
