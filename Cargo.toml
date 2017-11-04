@@ -6,3 +6,5 @@ repository = "https://github.com/xfix/extension-trait"
 license = "MIT/Apache-2.0"
 description = "Macro to declare extension traits"
 documentation = "https://docs.rs/extension-trait"
+keywords = ["no_std", "trait"]
+categories = ["no-std", "rust-patterns"]
