@@ -29,3 +29,17 @@ fn before_works() {
 fn after_works() {
     assert_eq!("<a>".after("a"), Some(">"));
 }
+
+mod x {
+    extension_trait! { pub Public for i32 {
+        fn method(self) -> i32 {
+            42
+        }
+    } }
+}
+
+#[test]
+fn pub_extension_trait() {
+    use x::Public;
+    assert_eq!(24i32.method(), 42);
+}
