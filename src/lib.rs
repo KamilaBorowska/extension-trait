@@ -66,15 +66,29 @@ macro_rules! extension_trait {
     };
 
     (@normalize_block $parsed:tt $block_parsed:tt $pub_token:tt : $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end [@normalize_block $parsed] $block_parsed [] $pub_token [] $($rest)*);
+        extension_trait!(
+            @parse_type_till_end
+            [@normalize_block $parsed]
+            $block_parsed
+            []
+            $pub_token
+            []
+            $($rest)*
+        );
     };
 
     (@normalize_block {$($parsed:tt)*} $block_parsed:tt $pub_token:tt) => {
         extension_trait!(@finish_parsing $pub_token $($parsed)* $block_parsed);
     };
 
-    (@normalize_block $parsed:tt {$($block_parsed:tt)*} $pub_token:tt $parsed_token:tt $($rest:tt)*) => {
-        extension_trait!(@normalize_block $parsed {$($block_parsed)* $parsed_token} $pub_token $($rest)*);
+    (
+        @normalize_block $parsed:tt {$($block_parsed:tt)*}
+        $pub_token:tt $parsed_token:tt $($rest:tt)*
+    ) => {
+        extension_trait!(
+            @normalize_block $parsed {$($block_parsed)* $parsed_token}
+            $pub_token $($rest)*
+        );
     };
 
     (@normalize_expression $parsed:tt $pub_token:tt {$($contents:tt)*}) => {
@@ -86,35 +100,77 @@ macro_rules! extension_trait {
     };
 
     (@normalize_expression $parsed:tt $pub_token:tt : $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end [@normalize_expression] $parsed [] $pub_token [] $($rest)*);
+        extension_trait!(
+            @parse_type_till_end [@normalize_expression] $parsed []
+            $pub_token [] $($rest)*
+        );
     };
 
-    (@parse_type_till_end $return_trait:tt $parsed:tt [$($left_brackets:tt)*] $pub_token:tt [$($type_name:tt)*] < $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed [$($left_brackets)* <] $pub_token [$($type_name)* <] $($rest)*);
+    (
+        @parse_type_till_end $return_trait:tt $parsed:tt [$($left_brackets:tt)*]
+        $pub_token:tt [$($type_name:tt)*] < $($rest:tt)*
+    ) => {
+        extension_trait!(
+            @parse_type_till_end $return_trait $parsed [$($left_brackets)* <]
+            $pub_token [$($type_name)* <] $($rest)*
+        );
     };
 
-    (@parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt $pub_token:tt $type_name:tt >> $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed $left_brackets $pub_token $type_name > > $($rest)*);
+    (
+        @parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt
+        $pub_token:tt $type_name:tt >> $($rest:tt)*
+    ) => {
+        extension_trait!(
+            @parse_type_till_end $return_trait $parsed $left_brackets
+            $pub_token $type_name > > $($rest)*
+        );
     };
 
-    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} [] $pub_token:tt $type_name:tt > $($rest:tt)*) => {
+    (
+        @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} []
+        $pub_token:tt $type_name:tt > $($rest:tt)*
+    ) => {
         extension_trait!($($return_trait)* {$($parsed)*: $type_name>} $pub_token $($rest)*);
     };
 
-    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt $pub_token:tt $type_name:tt , $($rest:tt)*) => {
+    (
+        @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt
+        $pub_token:tt $type_name:tt , $($rest:tt)*
+    ) => {
         extension_trait!($($return_trait)* {$($parsed)*: $type_name,} $pub_token $($rest)*);
     };
 
-    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} [] $pub_token:tt $type_name:tt {$($block:tt)*} $($rest:tt)*) => {
-        extension_trait!($($return_trait)* {$($parsed)*: $type_name} $pub_token {$($block)*} $($rest)*);
+    (
+        @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} []
+        $pub_token:tt $type_name:tt {$($block:tt)*} $($rest:tt)*
+    ) => {
+        extension_trait!(
+            $($return_trait)* {$($parsed)*: $type_name}
+            $pub_token {$($block)*} $($rest)*
+        );
     };
 
-    (@parse_type_till_end $return_trait:tt $parsed:tt [< $($left_brackets:tt)*] $pub_token:tt [$($type_name:tt)*] > $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed [$($left_brackets)*] $pub_token [$($type_name)* >] $($rest)*);
+    (
+        @parse_type_till_end $return_trait:tt $parsed:tt [< $($left_brackets:tt)*]
+        $pub_token:tt [$($type_name:tt)*] > $($rest:tt)*
+    ) => {
+        extension_trait!(@parse_type_till_end $return_trait $parsed
+        [$($left_brackets)*] $pub_token [$($type_name)* >] $($rest)*);
     };
 
-    (@parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt $pub_token:tt [$($type_name:tt)*] $token:tt $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed $left_brackets $pub_token [$($type_name)* $token] $($rest)*);
+    (
+        @parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt
+        $pub_token:tt [$($type_name:tt)*] $token:tt $($rest:tt)*
+    ) => {
+        extension_trait!(
+            @parse_type_till_end
+            $return_trait
+            $parsed
+            $left_brackets
+            $pub_token
+            [$($type_name)* $token]
+            $($rest)*
+        );
     };
 
     (@normalize_expression {$($parsed:tt)*} $pub_token:tt $parsed_token:tt $($rest:tt)*) => {
@@ -122,7 +178,10 @@ macro_rules! extension_trait {
     };
 
     (@ $($rest:tt)*) => {
-        compile_error!(concat!("Parsing has failed before generating final code, this is likely a bug, debug info:\n", stringify!(@ $($rest)*)));
+        compile_error!(concat!(
+            "Parsing has failed before generating final code, this is likely a bug, debug info:\n",
+            stringify!(@ $($rest)*)
+        ) );
     };
 
     ($($token:tt)*) => {
