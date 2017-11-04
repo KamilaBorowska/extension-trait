@@ -1,0 +1,6 @@
+[package]
+name = "extension-trait"
+version = "0.1.0"
+authors = ["Konrad Borowski <konrad@borowski.pw>"]
+
+[dependencies]
