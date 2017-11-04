@@ -6,6 +6,12 @@ macro_rules! extension_trait {
             $impl_gen_name:ident $(: [$($impl_gen_bound:tt)*])*
         ),*>)*
         $trait_name:ident for $type_name:ty
+        $(
+            where $(
+                $where_impl_gen_name:ident $(: [$($where_impl_gen_bound:tt)*])*
+            ),*
+            $(,)*
+        )*
         { $(
             fn $fn_name:ident
             $( < $(
@@ -23,7 +29,8 @@ macro_rules! extension_trait {
     ) => {
         $(#[$attr])*
         $($pub_token)*
-        trait $trait_name { $(
+        trait $trait_name
+        { $(
             fn $fn_name
             $( < $(
                 $fn_gen_name $(: $($fn_gen_bound)*)*
@@ -37,6 +44,12 @@ macro_rules! extension_trait {
             $impl_gen_name $(: $($impl_gen_bound)*)*
         ),*>)*
         $trait_name for $type_name
+        $(
+            where
+            $(
+                $where_impl_gen_name $(: $($where_impl_gen_bound)*)*
+            ),*
+        )*
         { $(
             fn $fn_name
             $( < $(
@@ -88,12 +101,16 @@ macro_rules! extension_trait {
         extension_trait!($($return_trait)* {$($parsed)*: $type_name>} $pub_token $($rest)*);
     };
 
-    (@parse_type_till_end $return_trait:tt $parsed:tt [< $($left_brackets:tt)*] $pub_token:tt [$($type_name:tt)*] > $($rest:tt)*) => {
-        extension_trait!(@parse_type_till_end $return_trait $parsed [$($left_brackets)*] $pub_token [$($type_name)* >] $($rest)*);
+    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt $pub_token:tt $type_name:tt , $($rest:tt)*) => {
+        extension_trait!($($return_trait)* {$($parsed)*: $type_name,} $pub_token $($rest)*);
     };
 
-    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt $pub_token:tt $type_name:tt , $($rest:tt)*) => {
-        extension_trait!($($return_trait)* {$($parsed)* : $type_name,} $pub_token $($rest)*);
+    (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} [] $pub_token:tt $type_name:tt {$($block:tt)*} $($rest:tt)*) => {
+        extension_trait!($($return_trait)* {$($parsed)*: $type_name} $pub_token {$($block)*} $($rest)*);
+    };
+
+    (@parse_type_till_end $return_trait:tt $parsed:tt [< $($left_brackets:tt)*] $pub_token:tt [$($type_name:tt)*] > $($rest:tt)*) => {
+        extension_trait!(@parse_type_till_end $return_trait $parsed [$($left_brackets)*] $pub_token [$($type_name)* >] $($rest)*);
     };
 
     (@parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt $pub_token:tt [$($type_name:tt)*] $token:tt $($rest:tt)*) => {
