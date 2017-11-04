@@ -52,10 +52,6 @@ macro_rules! extension_trait {
         compile_error!(concat!("Incorrect macro syntax, debug info:\n", stringify!($($rest)*)));
     };
 
-    (@normalize_block $parsed:tt $block_parsed:tt $pub_token:tt >> $($rest:tt)*) => {
-        extension_trait!(@normalize_block $parsed $block_parsed $pub_token > > $($rest)*);
-    };
-
     (@normalize_block $parsed:tt $block_parsed:tt $pub_token:tt : $($rest:tt)*) => {
         extension_trait!(@parse_type_till_end [@normalize_block $parsed] $block_parsed [] $pub_token [] $($rest)*);
     };
@@ -70,10 +66,6 @@ macro_rules! extension_trait {
 
     (@normalize_expression $parsed:tt $pub_token:tt {$($contents:tt)*}) => {
         extension_trait!(@normalize_block $parsed {} $pub_token $($contents)*);
-    };
-
-    (@normalize_expression $parsed:tt $pub_token:tt >> $($rest:tt)*) => {
-        extension_trait!(@normalize_expression $parsed $pub_token > > $($rest)*);
     };
 
     (@normalize_expression $parsed:tt [] pub $($rest:tt)*) => {
