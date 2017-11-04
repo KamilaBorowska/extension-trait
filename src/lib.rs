@@ -81,7 +81,7 @@ macro_rules! extension_trait {
     };
 
     (@parse_type_till_end $return_trait:tt $parsed:tt $left_brackets:tt $pub_token:tt $type_name:tt >> $($rest:tt)*) => {
-        extension_trait!($return_trait $parsed $left_brackets $pub_token $type_name > > $($rest)*);
+        extension_trait!(@parse_type_till_end $return_trait $parsed $left_brackets $pub_token $type_name > > $($rest)*);
     };
 
     (@parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} [] $pub_token:tt $type_name:tt > $($rest:tt)*) => {
