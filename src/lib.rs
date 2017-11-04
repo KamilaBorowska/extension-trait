@@ -1,3 +1,21 @@
+/// Declares an extension trait
+///
+/// # Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate extension_trait;
+///
+/// extension_trait! { pub Double for str {
+///    fn double(&self) -> String {
+///        self.repeat(2)
+///    }
+/// } }
+///
+/// fn main() {
+///     assert_eq!("Hello".double(), "HelloHello");
+/// }
+/// ```
 #[macro_export]
 macro_rules! extension_trait {
     (@finish_parsing [$($pub_token:tt)*]
