@@ -8,7 +8,11 @@ macro_rules! extension_trait_internal {
         $(<$(
             $impl_gen_name:tt $(: [$($impl_gen_bound:tt)*])*
         ),*>)*
-        $trait_name:ident for $type_name:ty
+        $trait_name:ident
+        $(<$(
+            $trait_gen_name:tt $(: [$($trait_gen_bound:tt)*])*
+        ),*>)*
+        for $type_name:ty
         $(
             where $(
                 $where_impl_gen_name:tt $(: [$($where_impl_gen_bound:tt)*])*
@@ -33,6 +37,9 @@ macro_rules! extension_trait_internal {
         $(#[$attr])*
         $($pub_token)*
         trait $trait_name
+        $(<$(
+            $trait_gen_name $(: [$($trait_gen_bound)*])*
+        ),*>)*
         { $(
             $($fn_keywords)* fn $fn_name
             $( < $(
@@ -46,7 +53,11 @@ macro_rules! extension_trait_internal {
         $(<$(
             $impl_gen_name $(: $($impl_gen_bound)*)*
         ),*>)*
-        $trait_name for $type_name
+        $trait_name
+        $(<$(
+            $trait_gen_name $(: [$($trait_gen_bound)*])*
+        ),*>)*
+        for $type_name
         $(
             where
             $(

@@ -113,3 +113,18 @@ fn unsafe_method() {
     assert_eq!(a, 2);
     assert_eq!(b, 1);
 }
+
+extension_trait! { <T: Copy> pub SliceMapExt<T> for [T] {
+    fn map_in_place<F: FnMut(T) -> T>(&mut self, mut f: F) {
+        for v in self {
+            *v = f(*v);
+        }
+    }
+}}
+
+#[test]
+fn slice_map_ext() {
+    let mut values = [1, 2, 3];
+    values.map_in_place(|x| x + 1);
+    assert_eq!(values, [2, 3, 4]);
+}
