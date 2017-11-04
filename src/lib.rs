@@ -88,14 +88,6 @@ macro_rules! extension_trait {
         extension_trait!($($return_trait)* {$($parsed)* : $type_name,} $pub_token $($rest)*);
     };
 
-    (@parse_type_till_end [$($return_trait:tt)*] $pub_token:tt $type_name:tt > $($rest:tt)*) => {
-        extension_trait!($($return_trait)* {$($parsed)* : $type_name >} $pub_token $($rest)*);
-    };
-
-    (@parse_type_till_end [$($return_trait:tt)*] $pub_token:tt $type_name:tt $block:block $($rest:tt)*) => {
-        extension_trait!($($return_trait)* {$($parsed)* : $type_name $block} $pub_token $($rest)*);
-    };
-
     (@parse_type_till_end $return_trait:tt $parsed:tt $pub_token:tt [$($type_name:tt)*] $token:tt $($rest:tt)*) => {
         extension_trait!(@parse_type_till_end $return_trait $parsed $pub_token [$($type_name)* $token] $($rest)*);
     };
