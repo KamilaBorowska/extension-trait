@@ -79,3 +79,17 @@ extension_trait! { <T: Copy + Into<String>> pub DoubleBracketConversion for Vec<
 fn double_bracket_conversion() {
     assert_eq!(vec!["asdf"].first_into_string(), String::from("asdf"));
 }
+
+extension_trait! { <T> pub DoubleBracketConversionUsingWhere for Vec<T>
+where
+    T: Copy + Into<String>
+{
+    fn first_into_string_using_where(&self) -> String {
+        self[0].into()
+    }
+} }
+
+#[test]
+fn double_bracket_conversion_using_where() {
+    assert_eq!(vec!["asdf"].first_into_string_using_where(), String::from("asdf"));
+}
