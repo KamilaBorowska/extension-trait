@@ -2,5 +2,7 @@
 name = "extension-trait"
 version = "0.1.0"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
-
-[dependencies]
+repository = "https://github.com/xfix/extension-trait"
+license = "MIT/Apache-2.0"
+description = "Macro to declare extension traits"
+documentation = "https://docs.rs/extension-trait"
