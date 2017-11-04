@@ -19,3 +19,21 @@ fn main() {
     assert_eq!("Hello".double(), "HelloHello");
 }
 ```
+
+It's also possible to use generic types.
+
+```rust
+extension_trait! { <T: Copy> pub SliceMapExt<T> for [T] {
+    fn map_in_place<F: FnMut(T) -> T>(&mut self, mut f: F) {
+        for v in self {
+            *v = f(*v);
+        }
+    }
+} }
+
+fn main() {
+    let mut values = [1, 2, 3];
+    values.map_in_place(|x| x + 1);
+    assert_eq!(values, [2, 3, 4]);
+}
+```
