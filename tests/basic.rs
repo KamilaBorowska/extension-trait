@@ -56,15 +56,15 @@ fn generic_extension_traits() {
 }
 
 extension_trait! { pub ReturnArgument for () {
-    fn return_argument<T>(&self, arg: T) -> T
+    fn return_argument<T>(&self, arg: T) -> String
     where
-        T: Debug,
+        T: ToString,
     {
-        arg
+        arg.to_string()
     }
 } }
 
 #[test]
 fn generic_function_extension_traits() {
-    assert_eq!(().return_argument(42), 42);
+    assert_eq!(().return_argument(42), "42");
 }
