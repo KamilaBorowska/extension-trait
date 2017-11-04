@@ -28,7 +28,8 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name $(: $fn_gen_bound)*
             ),* > )*
-            ( $($args)* ) $(-> $out)*;
+            ( $($args)* ) $(-> $out)*
+            $( where $( $where_gen_name: $bound ),* )*;
         )* }
 
         impl
@@ -41,7 +42,9 @@ macro_rules! extension_trait {
             $( < $(
                 $fn_gen_name $(: $fn_gen_bound)*
             ),* > )*
-            ( $($args)* ) $(-> $out)* $code
+            ( $($args)* ) $(-> $out)*
+            $( where $( $where_gen_name: $bound ),* )*
+            $code
         )* }
     };
 
