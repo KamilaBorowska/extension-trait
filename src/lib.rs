@@ -1,3 +1,5 @@
+#![no_std]
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! extension_trait_internal {
