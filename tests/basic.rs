@@ -96,3 +96,20 @@ fn double_bracket_conversion_using_where() {
         String::from("asdf")
     );
 }
+
+extension_trait! { <'a, T> pub Unsafe for (&'a mut T, &'a mut T) {
+    unsafe fn swap(&mut self) {
+        std::ptr::swap(self.0, self.1)
+    }
+} }
+
+#[test]
+fn unsafe_method() {
+    let mut a = 1;
+    let mut b = 2;
+    unsafe {
+        (&mut a, &mut b).swap();
+    }
+    assert_eq!(a, 2);
+    assert_eq!(b, 1);
+}

@@ -4,19 +4,19 @@ macro_rules! extension_trait_internal {
     (@finish_parsing [$($pub_token:tt)*]
         $(#[$attr:meta])*
         $(<$(
-            $impl_gen_name:ident $(: [$($impl_gen_bound:tt)*])*
+            $impl_gen_name:tt $(: [$($impl_gen_bound:tt)*])*
         ),*>)*
         $trait_name:ident for $type_name:ty
         $(
             where $(
-                $where_impl_gen_name:ident $(: [$($where_impl_gen_bound:tt)*])*
+                $where_impl_gen_name:tt $(: [$($where_impl_gen_bound:tt)*])*
             ),*
             $(,)*
         )*
         { $(
-            fn $fn_name:ident
+            [$($fn_keywords:tt)*] fn $fn_name:ident
             $( < $(
-                $fn_gen_name:ident $(: [$($fn_gen_bound:tt)*])*
+                $fn_gen_name:tt $(: [$($fn_gen_bound:tt)*])*
             ),* > )*
             ( $($args:tt)* ) $(-> $out:ty)*
             $(
@@ -32,7 +32,7 @@ macro_rules! extension_trait_internal {
         $($pub_token)*
         trait $trait_name
         { $(
-            fn $fn_name
+            $($fn_keywords)* fn $fn_name
             $( < $(
                 $fn_gen_name $(: $($fn_gen_bound)*)*
             ),* > )*
@@ -52,7 +52,7 @@ macro_rules! extension_trait_internal {
             ),*
         )*
         { $(
-            fn $fn_name
+            $($fn_keywords)* fn $fn_name
             $( < $(
                 $fn_gen_name $(: $($fn_gen_bound)*)*
             ),* > )*
@@ -71,6 +71,20 @@ macro_rules! extension_trait_internal {
             $pub_token
             []
             $($rest)*
+        );
+    };
+
+    (@normalize_block $parsed:tt {$($block_parsed:tt)*} $pub_token:tt fn $($rest:tt)*) => {
+        extension_trait_internal!(
+            @normalize_block $parsed {$($block_parsed)* [] fn}
+            $pub_token $($rest)*
+        );
+    };
+
+    (@normalize_block $parsed:tt {$($block_parsed:tt)*} $pub_token:tt unsafe fn $($rest:tt)*) => {
+        extension_trait_internal!(
+            @normalize_block $parsed {$($block_parsed)* [unsafe] fn}
+            $pub_token $($rest)*
         );
     };
 
@@ -127,14 +141,20 @@ macro_rules! extension_trait_internal {
         @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} []
         $pub_token:tt $type_name:tt > $($rest:tt)*
     ) => {
-        extension_trait_internal!($($return_trait)* {$($parsed)*: $type_name>} $pub_token $($rest)*);
+        extension_trait_internal!(
+            $($return_trait)* {$($parsed)*: $type_name>}
+            $pub_token $($rest)*
+        );
     };
 
     (
         @parse_type_till_end [$($return_trait:tt)*] {$($parsed:tt)*} $left_brackets:tt
         $pub_token:tt $type_name:tt , $($rest:tt)*
     ) => {
-        extension_trait_internal!($($return_trait)* {$($parsed)*: $type_name,} $pub_token $($rest)*);
+        extension_trait_internal!(
+            $($return_trait)* {$($parsed)*: $type_name,}
+            $pub_token $($rest)*
+        );
     };
 
     (
@@ -171,7 +191,10 @@ macro_rules! extension_trait_internal {
     };
 
     (@normalize_expression {$($parsed:tt)*} $pub_token:tt $parsed_token:tt $($rest:tt)*) => {
-        extension_trait_internal!(@normalize_expression {$($parsed)* $parsed_token} $pub_token $($rest)*);
+        extension_trait_internal!(
+            @normalize_expression {$($parsed)* $parsed_token}
+            $pub_token $($rest)*
+        );
     };
 }
 
