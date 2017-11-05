@@ -128,3 +128,16 @@ fn slice_map_ext() {
     values.map_in_place(|x| x + 1);
     assert_eq!(values, [2, 3, 4]);
 }
+
+extension_trait! {
+    /// This extension trait is documented
+    Documented for () {
+        /// A function is documented too.
+        fn documented(self) {}
+    }
+}
+
+#[test]
+fn documented() {
+    assert_eq!(().documented(), ());
+}
