@@ -20,6 +20,7 @@ macro_rules! extension_trait_internal {
             $(,)*
         )*
         { $(
+            $(#[$fn_attr:meta])*
             [$($fn_keywords:tt)*] fn $fn_name:ident
             $( < $(
                 $fn_gen_name:tt $(: [$($fn_gen_bound:tt)*])*
@@ -43,6 +44,7 @@ macro_rules! extension_trait_internal {
         { $(
             // Will be removed once Rust allows `:` to follow `pat` in macros.
             #[allow(patterns_in_fns_without_body)]
+            $(#[$fn_attr])*
             $($fn_keywords)* fn $fn_name
             $( < $(
                 $fn_gen_name $(: $($fn_gen_bound)*)*
