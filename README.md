@@ -23,6 +23,9 @@ fn main() {
 It's also possible to use generic types.
 
 ```rust
+#[macro_use]
+extern crate extension_trait;
+
 extension_trait! { <T: Copy> pub SliceMapExt<T> for [T] {
     fn map_in_place<F: FnMut(T) -> T>(&mut self, mut f: F) {
         for v in self {
