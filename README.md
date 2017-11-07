@@ -20,7 +20,8 @@ fn main() {
 }
 ```
 
-It's also possible to use generic types.
+It's also possible to use generic types. The declaration matches how
+`impl` looks, requiring specifying type parameters for a trait itself.
 
 ```rust
 #[macro_use]
