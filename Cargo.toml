@@ -2,13 +2,10 @@
 name = "extension-trait"
 version = "0.1.2"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
-repository = "https://github.com/xfix/extension-trait"
+repository = "https://gitlab.com/KonradBorowski/extension-trait"
 license = "MIT/Apache-2.0"
 description = "Macro to declare extension traits"
 documentation = "https://docs.rs/extension-trait"
 keywords = ["no_std", "trait"]
 categories = ["no-std", "rust-patterns"]
 readme = "README.md"
-
-[badges]
-travis-ci = { repository = "xfix/extension-trait" }
