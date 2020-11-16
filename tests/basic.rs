@@ -208,3 +208,20 @@ impl TupleHygiene for i32 {
 fn tuple_higiene() {
     assert_eq!(i32::tuple_higiene((1, 2), 4), 7);
 }
+
+struct X {
+    a: i32,
+    b: i32,
+}
+
+#[extension_trait]
+impl StructPattern for i32 {
+    fn x(X { a, b }: X) -> i32 {
+        a + b
+    }
+}
+
+#[test]
+fn struct_pattern() {
+    assert_eq!(i32::x(X { a: 1, b: 2 }), 3);
+}
