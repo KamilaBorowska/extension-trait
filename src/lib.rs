@@ -5,7 +5,7 @@ use quote::quote;
 use syn::spanned::Spanned;
 use syn::{
     parse_macro_input, FnArg, ImplItem, ImplItemConst, ImplItemMethod, ImplItemType, ItemImpl, Pat,
-    PatIdent, PatType, Signature, Visibility,
+    PatBox, PatIdent, PatReference, PatType, Signature, Visibility,
 };
 
 /// Declares an extension trait
@@ -47,18 +47,13 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
             constness, asyncness, unsafety, abi, ident, generics, inputs, variadic, output, ..
         }, .. }) => {
             let inputs = inputs.into_iter().map(|arg| {
-                if let FnArg::Typed(PatType { attrs, pat, ty, .. }) = &arg {
-                    match **pat {
-                        Pat::Ident(PatIdent {
-                            by_ref: None,
-                            mutability: None,
-                            subpat: None,
-                            ..
-                        }) => {},
-                        _ => return quote! { #(#attrs)* _: #ty },
-                    }
+                match arg {
+                    FnArg::Typed(PatType { attrs, pat, ty, .. }) => {
+                        let ident = extract_ident(&pat);
+                        quote! { #(#attrs)* #ident: #ty }
+                    },
+                    FnArg::Receiver(_) => quote! { #arg }
                 }
-                quote! { #arg }
             });
             let where_clause = &generics.where_clause;
             quote! {
@@ -88,5 +83,15 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
         syn::Error::new(impl_token.span(), "extension trait name was not provided")
             .to_compile_error()
             .into()
+    }
+}
+
+fn extract_ident(pat: &Pat) -> proc_macro2::TokenStream {
+    match pat {
+        Pat::Box(PatBox { pat, .. }) | Pat::Reference(PatReference { pat, .. }) => {
+            extract_ident(pat)
+        }
+        Pat::Ident(PatIdent { ident, .. }) => quote! { #ident },
+        _ => quote! { _ },
     }
 }

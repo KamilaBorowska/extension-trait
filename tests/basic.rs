@@ -149,3 +149,16 @@ impl Documented for () {
 fn documented() {
     assert_eq!(().documented(), ());
 }
+
+#[extension_trait]
+impl PlusTwoReceiver for i32 {
+    fn plus_two(mut self: Self) -> i32 {
+        self += 2;
+        self
+    }
+}
+
+#[test]
+fn receiver() {
+    assert_eq!(2.plus_two(), 4);
+}
