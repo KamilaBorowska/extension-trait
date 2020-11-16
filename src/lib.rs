@@ -80,8 +80,8 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
                 #(#items)*
             }
             #input
-        }
-        .into())
+        })
+        .into()
     } else {
         panic!("Extension trait name was not provided");
     }
