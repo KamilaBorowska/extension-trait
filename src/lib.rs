@@ -2,6 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::spanned::Spanned;
 use syn::{
     parse_macro_input, FnArg, ImplItem, ImplItemConst, ImplItemMethod, ImplItemType, ItemImpl, Pat,
     PatIdent, PatType, Signature, Visibility,
@@ -31,6 +32,7 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
     let visibility = parse_macro_input!(args as Visibility);
     let input_cloned = input.clone();
     let ItemImpl {
+        impl_token,
         attrs,
         unsafety,
         trait_,
@@ -70,7 +72,7 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
             generics,
             ..
         }) => quote! { #(#attrs)* type #ident #generics; },
-        _ => panic!("Unsupported item type in impl"),
+        _ => return syn::Error::new(item.span(), "unsupported item type").to_compile_error().into(),
     });
     if let Some((None, path, _)) = trait_ {
         let input = proc_macro2::TokenStream::from(input);
@@ -83,6 +85,8 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
         })
         .into()
     } else {
-        panic!("Extension trait name was not provided");
+        syn::Error::new(impl_token.span(), "extension trait name was not provided")
+            .to_compile_error()
+            .into()
     }
 }
