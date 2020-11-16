@@ -2,10 +2,11 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::ext::IdentExt;
 use syn::spanned::Spanned;
 use syn::{
-    parse_macro_input, FnArg, ImplItem, ImplItemConst, ImplItemMethod, ImplItemType, ItemImpl, Pat,
-    PatBox, PatIdent, PatReference, PatType, Signature, Visibility,
+    parse_macro_input, FnArg, Ident, ImplItem, ImplItemConst, ImplItemMethod, ImplItemType,
+    ItemImpl, Pat, PatBox, PatIdent, PatReference, PatTuple, PatType, Signature, Visibility,
 };
 
 /// Declares an extension trait
@@ -47,9 +48,10 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
             constness, asyncness, unsafety, abi, ident, generics, inputs, variadic, output, ..
         }, .. }) => {
             let inputs = inputs.into_iter().map(|arg| {
+                let span = arg.span();
                 match arg {
                     FnArg::Typed(PatType { attrs, pat, ty, .. }) => {
-                        let ident = extract_ident(&pat);
+                        let ident = extract_ident(*pat).unwrap_or_else(|| Ident::new("_", span));
                         quote! { #(#attrs)* #ident: #ty }
                     },
                     FnArg::Receiver(_) => quote! { #arg }
@@ -86,12 +88,26 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 }
 
-fn extract_ident(pat: &Pat) -> proc_macro2::TokenStream {
+fn extract_ident(pat: Pat) -> Option<Ident> {
     match pat {
         Pat::Box(PatBox { pat, .. }) | Pat::Reference(PatReference { pat, .. }) => {
-            extract_ident(pat)
+            extract_ident(*pat)
         }
-        Pat::Ident(PatIdent { ident, .. }) => quote! { #ident },
-        _ => quote! { _ },
+        Pat::Ident(PatIdent { ident, .. }) => Some(ident),
+        Pat::Tuple(PatTuple { elems, .. }) => {
+            if elems.len() <= 1 {
+                extract_ident(elems.into_iter().next()?)
+            } else {
+                let span = elems.span();
+                let elems = elems
+                    .into_iter()
+                    .map(extract_ident)
+                    .map(|o| o.map(|ident| ident.unraw().to_string()))
+                    .collect::<Option<Vec<String>>>()?;
+                let joined = elems.join("_");
+                Some(Ident::new(&joined, span))
+            }
+        }
+        _ => None,
     }
 }

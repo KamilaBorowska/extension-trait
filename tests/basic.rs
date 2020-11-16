@@ -162,3 +162,49 @@ impl PlusTwoReceiver for i32 {
 fn receiver() {
     assert_eq!(2.plus_two(), 4);
 }
+
+#[extension_trait]
+impl EmptyTuple for i32 {
+    fn hi((): ()) {}
+}
+
+#[test]
+fn empty_tuple() {
+    i32::hi(());
+}
+
+#[extension_trait]
+impl SingleElementTuple for i32 {
+    fn hello((r#if,): (i32,)) -> i32 {
+        r#if
+    }
+}
+
+#[test]
+fn single_element_tuple() {
+    assert_eq!(i32::hello((4,)), 4);
+}
+
+#[extension_trait]
+impl Tuple for i32 {
+    fn tuple((r#as, r#if): (i32, i32)) -> i32 {
+        r#as + r#if
+    }
+}
+
+#[test]
+fn two_element_tuple() {
+    assert_eq!(i32::tuple((4, 5)), 9);
+}
+
+#[extension_trait]
+impl TupleHygiene for i32 {
+    fn tuple_higiene((a, b): (i32, i32), a_b: i32) -> i32 {
+        a + b + a_b
+    }
+}
+
+#[test]
+fn tuple_higiene() {
+    assert_eq!(i32::tuple_higiene((1, 2), 4), 7);
+}
