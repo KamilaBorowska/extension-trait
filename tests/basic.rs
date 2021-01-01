@@ -33,8 +33,8 @@ fn after_works() {
 mod x {
     use super::extension_trait;
 
-    #[extension_trait(pub)]
-    impl Public for i32 {
+    #[extension_trait]
+    pub impl Public for i32 {
         fn method(self) -> i32 {
             42
         }
@@ -47,8 +47,8 @@ fn pub_extension_trait() {
     assert_eq!(24i32.method(), 42);
 }
 
-#[extension_trait(pub)]
-impl<T> Length for Vec<T> {
+#[extension_trait]
+pub impl<T> Length for Vec<T> {
     fn size(&self) -> usize {
         self.len()
     }
@@ -59,8 +59,8 @@ fn generic_extension_traits() {
     assert_eq!(vec!["q"].size(), 1);
 }
 
-#[extension_trait(pub)]
-impl ReturnArgument for () {
+#[extension_trait]
+pub impl ReturnArgument for () {
     fn return_argument<T>(&self, arg: T) -> String
     where
         T: ToString,
@@ -74,8 +74,8 @@ fn generic_function_extension_traits() {
     assert_eq!(().return_argument(42), "42");
 }
 
-#[extension_trait(pub)]
-impl<T: Copy + Into<String>> DoubleBracketConversion for Vec<T> {
+#[extension_trait]
+pub impl<T: Copy + Into<String>> DoubleBracketConversion for Vec<T> {
     fn first_into_string(&self) -> String {
         self[0].into()
     }
@@ -86,8 +86,8 @@ fn double_bracket_conversion() {
     assert_eq!(vec!["asdf"].first_into_string(), String::from("asdf"));
 }
 
-#[extension_trait(pub)]
-impl<T> DoubleBracketConversionUsingWhere for Vec<T>
+#[extension_trait]
+pub impl<T> DoubleBracketConversionUsingWhere for Vec<T>
 where
     T: Copy + Into<String>,
 {
@@ -104,8 +104,8 @@ fn double_bracket_conversion_using_where() {
     );
 }
 
-#[extension_trait(pub)]
-impl<'a, T> Unsafe for (&'a mut T, &'a mut T) {
+#[extension_trait]
+pub impl<'a, T> Unsafe for (&'a mut T, &'a mut T) {
     unsafe fn swap(&mut self) {
         std::ptr::swap(self.0, self.1)
     }
@@ -122,8 +122,8 @@ fn unsafe_method() {
     assert_eq!(b, 1);
 }
 
-#[extension_trait(pub)]
-impl<T: Copy> SliceMapExt<T> for [T] {
+#[extension_trait]
+pub impl<T: Copy> SliceMapExt<T> for [T] {
     fn map_in_place<F: FnMut(T) -> T>(&mut self, mut f: F) {
         for v in self {
             *v = f(*v);
@@ -140,7 +140,7 @@ fn slice_map_ext() {
 
 /// This extension trait is documented
 #[extension_trait]
-impl Documented for () {
+pub impl Documented for () {
     /// A function is documented too.
     fn documented(self) {}
 }

@@ -2,12 +2,34 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use std::borrow::Cow;
 use syn::ext::IdentExt;
+use syn::parse::{Nothing, Parse, ParseStream};
 use syn::spanned::Spanned;
 use syn::{
-    parse_macro_input, FnArg, Ident, ImplItem, ImplItemConst, ImplItemMethod, ImplItemType,
-    ItemImpl, Pat, PatBox, PatIdent, PatReference, PatTuple, PatType, Signature, Visibility,
+    parse_macro_input, Attribute, FnArg, Ident, ImplItem, ImplItemConst, ImplItemMethod,
+    ImplItemType, ItemImpl, Pat, PatBox, PatIdent, PatReference, PatTuple, PatType, Signature,
+    Visibility,
 };
+
+struct ItemImplWithVisibility {
+    attrs: Vec<Attribute>,
+    visibility: Visibility,
+    impl_item: ItemImpl,
+}
+
+impl Parse for ItemImplWithVisibility {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
+        let visibility = input.parse()?;
+        let impl_item = input.parse()?;
+        Ok(Self {
+            attrs,
+            visibility,
+            impl_item,
+        })
+    }
+}
 
 /// Declares an extension trait
 ///
@@ -17,8 +39,8 @@ use syn::{
 /// #[macro_use]
 /// extern crate extension_trait;
 ///
-/// #[extension_trait(pub)]
-/// impl DoubleExt for str {
+/// #[extension_trait]
+/// pub impl DoubleExt for str {
 ///    fn double(&self) -> String {
 ///        self.repeat(2)
 ///    }
@@ -30,17 +52,20 @@ use syn::{
 /// ```
 #[proc_macro_attribute]
 pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
-    let visibility = parse_macro_input!(args as Visibility);
-    let input_cloned = input.clone();
+    parse_macro_input!(args as Nothing);
+    let ItemImplWithVisibility {
+        attrs,
+        visibility,
+        impl_item,
+    } = parse_macro_input!(input as ItemImplWithVisibility);
     let ItemImpl {
         impl_token,
-        attrs,
         unsafety,
         trait_,
         items,
         ..
-    } = parse_macro_input!(input_cloned as ItemImpl);
-    let items = items.into_iter().map(|item| match item {
+    } = &impl_item;
+    let items = items.iter().map(|item| match item {
         ImplItem::Const(ImplItemConst {
             attrs, ident, ty, ..
         }) => quote! { #(#attrs)* const #ident: #ty; },
@@ -51,7 +76,7 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
                 let span = arg.span();
                 match arg {
                     FnArg::Typed(PatType { attrs, pat, ty, .. }) => {
-                        let ident = extract_ident(*pat).unwrap_or_else(|| Ident::new("_", span));
+                        let ident = extract_ident(pat).unwrap_or_else(|| Cow::Owned(Ident::new("_", span)));
                         quote! { #(#attrs)* #ident: #ty }
                     },
                     FnArg::Receiver(_) => quote! { #arg }
@@ -69,16 +94,15 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
             generics,
             ..
         }) => quote! { #(#attrs)* type #ident #generics; },
-        _ => return syn::Error::new(item.span(), "unsupported item type").to_compile_error().into(),
+        _ => syn::Error::new(item.span(), "unsupported item type").to_compile_error(),
     });
     if let Some((None, path, _)) = trait_ {
-        let input = proc_macro2::TokenStream::from(input);
         (quote! {
             #(#attrs)*
             #visibility #unsafety trait #path {
                 #(#items)*
             }
-            #input
+            #impl_item
         })
         .into()
     } else {
@@ -88,12 +112,12 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 }
 
-fn extract_ident(pat: Pat) -> Option<Ident> {
+fn extract_ident(pat: &Pat) -> Option<Cow<'_, Ident>> {
     match pat {
         Pat::Box(PatBox { pat, .. }) | Pat::Reference(PatReference { pat, .. }) => {
-            extract_ident(*pat)
+            extract_ident(pat)
         }
-        Pat::Ident(PatIdent { ident, .. }) => Some(ident),
+        Pat::Ident(PatIdent { ident, .. }) => Some(Cow::Borrowed(ident)),
         Pat::Tuple(PatTuple { elems, .. }) => {
             if elems.len() <= 1 {
                 extract_ident(elems.into_iter().next()?)
@@ -105,7 +129,7 @@ fn extract_ident(pat: Pat) -> Option<Ident> {
                     .map(|o| o.map(|ident| ident.unraw().to_string()))
                     .collect::<Option<Vec<String>>>()?;
                 let joined = elems.join("_");
-                Some(Ident::new(&joined, span))
+                Some(Cow::Owned(Ident::new(&joined, span)))
             }
         }
         _ => None,

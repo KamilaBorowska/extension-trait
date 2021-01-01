@@ -9,8 +9,8 @@ methods to an external type.
 #[macro_use]
 extern crate extension_trait;
 
-#[extension_trait(pub)]
-impl DoubleExt for str {
+#[extension_trait]
+pub impl DoubleExt for str {
    fn double(&self) -> String {
        self.repeat(2)
    }
