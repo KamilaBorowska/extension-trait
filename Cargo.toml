@@ -14,7 +14,11 @@ readme = "README.md"
 [lib]
 proc-macro = true
 
+[features]
+async_trait = []
+
 [dependencies]
 proc-macro2 = "1.0.6"
 syn = { version = "1.0.7", features = ["full"] }
 quote = "1.0.2"
+darling = "0.14.2"

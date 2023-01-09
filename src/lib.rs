@@ -1,16 +1,19 @@
 extern crate proc_macro;
+#[macro_use]
+extern crate darling;
 
 use proc_macro::TokenStream;
 use quote::quote;
 use std::borrow::Cow;
 use syn::ext::IdentExt;
-use syn::parse::{Nothing, Parse, ParseStream};
+use syn::parse::{Parse, ParseStream};
 use syn::spanned::Spanned;
 use syn::{
     parse_macro_input, Attribute, FnArg, Ident, ImplItem, ImplItemConst, ImplItemMethod,
     ImplItemType, ItemImpl, Pat, PatBox, PatIdent, PatReference, PatTuple, PatType, Signature,
-    Visibility,
+    Visibility, AttributeArgs,
 };
+use darling::FromMeta;
 
 struct ItemImplWithVisibility {
     attrs: Vec<Attribute>,
@@ -28,6 +31,23 @@ impl Parse for ItemImplWithVisibility {
             visibility,
             impl_item,
         })
+    }
+}
+
+#[derive(Default, Debug, FromMeta)]
+struct MacroArgs {
+    async_trait: Option<bool>,
+}
+
+impl MacroArgs {
+    fn async_trait(&self) -> bool {
+        if !cfg!(feature = "async_trait") {
+            if self.async_trait.is_some() {
+                panic!("async_trait feature is not enabled!");
+            }
+            return false;
+        }
+        self.async_trait.unwrap_or(true)
     }
 }
 
@@ -52,7 +72,8 @@ impl Parse for ItemImplWithVisibility {
 /// ```
 #[proc_macro_attribute]
 pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
-    parse_macro_input!(args as Nothing);
+    let attr_args = parse_macro_input!(args as AttributeArgs);
+    let attr_args = MacroArgs::from_list(&attr_args).unwrap_or_else(|_| MacroArgs::default());
     let ItemImplWithVisibility {
         attrs,
         visibility,
@@ -96,12 +117,16 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
         }) => quote! { #(#attrs)* type #ident #generics; },
         _ => syn::Error::new(item.span(), "unsupported item type").to_compile_error(),
     });
+    let async_trait = if attr_args.async_trait() { "#[async_trait::async_trait]" } else { "" };
+    let async_trait: proc_macro2::TokenStream = async_trait.parse().unwrap();
     if let Some((None, path, _)) = trait_ {
         (quote! {
             #(#attrs)*
+            #async_trait
             #visibility #unsafety trait #path {
                 #(#items)*
             }
+            #async_trait
             #impl_item
         })
         .into()
