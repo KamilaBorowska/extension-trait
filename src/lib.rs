@@ -102,6 +102,7 @@ pub fn extension_trait(args: TokenStream, input: TokenStream) -> TokenStream {
             #visibility #unsafety trait #path {
                 #(#items)*
             }
+            #(#attrs)*
             #impl_item
         })
         .into()
