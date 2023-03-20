@@ -1,7 +1,7 @@
 [package]
 name = "extension-trait"
 version = "1.0.1"
-edition = "2018"
+edition = "2021"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
 repository = "https://gitlab.com/KonradBorowski/extension-trait"
 license = "MIT OR Apache-2.0"
